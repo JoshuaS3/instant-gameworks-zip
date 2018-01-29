@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,44 +7,74 @@ using System.Threading.Tasks;
 
 namespace InstantGameworksZip
 {
+
+    // TODO:
+    //
+    // -Add methods to the ResourcePack struct for possible dynamic libraries. Stuff like .GetFile(string filename) to make it easier.
+    //
+
     class ResourceManager
     {
-        //Data types
-        //UInt16 - 16 bits - 2 bytes
-        //UInt32 - 32 bits - 4 bytes
-
-        struct ResourceFile
+        enum ResourceType
         {
-            public static ResourceMetadata Metadata { get; }
-            public static byte[] ResourceData { get; }
+            InstantGameworksObject = 0, //Optimized OBJ variant
+            WaveAudio = 1, //Uncompressed + crisp
+            FLIF = 2, //Free Lossless Image Format. really nicee
+        }
 
-            ResourceFile()
+        struct ResourcePack //Full file is saved as this. Contains pack metadata and the array of individual resources, of course.
+        {
+            private ResourcePackMetadata _metadata;
+            private Resource[] _resourceData;
+
+            public ResourcePackMetadata Metadata => _metadata;
+            public Resource[] ResourceData => _resourceData;
+
+            ResourcePack(ResourcePackMetadata newMetadata, Resource[] newResourceData)
             {
-
+                _metadata = newMetadata;
+                _resourceData = newResourceData;
             }
         }
-        
 
-        struct ResourceMetadata
+        struct ResourcePackMetadata //Consists of the # of resources, total filesize, and the start position (in bytes) of each resource
         {
-            public static int FileSizeInBytes { get; set; } //int + ushort + uint + Dictionary
+            private ushort _resourceCount;
+            private uint _fileSize;
+            private Dictionary<string, int> _fileIndex;
 
-            public static ushort ResourceCount { get; set; }
-            public static uint FileSize { get; set; }
+            public ushort ResourceCount => _resourceCount;
+            public uint FileSize => _fileSize;
+            public Dictionary<string, int> FileIndex => _fileIndex;
+            ResourcePackMetadata(ushort resourceCount, uint fileSize, Dictionary<string, int> fileIndex)
+            {
+                _resourceCount = resourceCount;
+                _fileSize = fileSize;
+                _fileIndex = fileIndex;
+            }
+        }
 
-            public static Dictionary<string, int> FileIndex { get; set; }
+        struct Resource //each individual resource. uses the enum defined earlier.
+        {
+            public ResourceType ResourceType { get; }
+            public string ResourceName { get; }
+            public byte[] ResourceData { get; }
+            Resource(ResourceType type, string name, byte[] data)
+            {
+                ResourceType = type;
+                ResourceName = name;
+                ResourceData = data;
+            }
+        }
+
+        public static void ImportFile(string filePath)
+        {
+
+        }
+        public static void ExportFile(string outputPath, string[] resourceFiles)
+        {
+            ResourcePack outFile = new ResourcePack();
             
-            public static int UpdateSizeInBytes()
-            {
-                FileSizeInBytes = 4 + 2 + 4 + System.Runtime.InteropServices.Marshal.SizeOf(FileIndex);
-                return FileSizeInBytes;
-            }
-            public static void AddFile(string fileNameWithExtension, int locationInData, uint fileSize)
-            {
-                ResourceCount += 1;
-                FileSize += fileSize;
-                FileIndex.Add(fileNameWithExtension, locationInData);
-            }
         }
     }
 }
