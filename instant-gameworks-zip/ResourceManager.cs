@@ -74,7 +74,7 @@ namespace InstantGameworksZip
         public static void ExportFile(string outputPath, string[] resourceFiles)
         {
             ResourcePack outFile = new ResourcePack();
-            
+
         }
     }
 }
